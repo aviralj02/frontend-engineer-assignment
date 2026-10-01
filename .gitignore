@@ -1,2 +1,5 @@
 node_modules/
 .DS_Store
+# built from frontend/src/agent
+backend/pages/agent.js
+frontend/dist/
