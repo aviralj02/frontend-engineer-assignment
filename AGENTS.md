@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Working rules for anyone (human or AI) building in this repo. **`README.md` is the spec.** Cite requirement IDs (R3.7, R6.4, …) in commits, comments and PRs. If this file and the README disagree, the README wins. Record the decision under "Ambiguities" in the README.
+Working rules for anyone (human or AI) building in this repo. **`BRIEF.md` is the spec** (the original assignment README). Cite requirement IDs (R3.7, R6.4, …) in commits, comments and PRs. If this file and the brief disagree, the brief wins. Record the decision under "Ambiguities" in README.md.
 
 ## What we're building
 
@@ -17,13 +17,13 @@ frontend/
     protocol/      shared message types + version. Imported by host AND agent
     agent/         the in-page script, built to backend/pages/agent.js (IIFE, no deps)
     host/
-      bridge/      one PreviewConnection per iframe: handshake, requests, timeouts
-      store/       Zustand slices: board, previews, selection, layers, inspector
-      board/       grid, pan/zoom, mode toolbar
+      bridge/      one PreviewConnection per iframe (handshake, requests, timeouts), router, message handlers
+      store/       Zustand state (index.ts) + user-intent actions (actions.ts)
+      board/       grid, pan/zoom, previews, toolbar
       overlay/     hover/selection outlines + labels (screen space)
-      layers/      tree panel
+      layers/      tree panel: actions (only writer of layers state), rows (derived), panel
       inspector/   live + details
-      errors/      Region boundary, report wrapper, dev failure menu
+      errors/      Region boundary, failure routing/reporting, dev failure menu
   report.js        given stub. Keep the signature
 backend/pages/*.html   ONLY change: one <script src="agent.js"></script>
 ```
@@ -75,7 +75,8 @@ The agent is served by the pages server from its own origin, so it doesn't depen
 - Small modules and pure functions. Agent code must stay dependency-free and under ~15 KB.
 - No `any` in `protocol/`. Exhaustive `switch` on `kind`.
 - Comments explain *why*, and cite the requirement ID.
-- Test with backend flags: `?latency=1500&fail=0.3`. Every phase is checked against pages 3, 4 and 5 (sticky/scroll, re-render, deep tree).
+- Test with backend flags: `?latency=1500&fail=0.3` (the dev menu sets them for every request). Every phase is checked against pages 3, 4 and 5 (sticky/scroll, re-render, deep tree).
+- Run `npm run typecheck` before calling a change done, and check the behaviour in the browser.
 - Don't commit unless asked. Use conventional commit messages.
 
 ## Phases
