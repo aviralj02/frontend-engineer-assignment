@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { getConnection } from "./bridge";
 import { useStore } from "./store";
+import "@fontsource-variable/instrument-sans";
 import "./app.css";
 
 // Dev-only handles for poking at state in devtools.
