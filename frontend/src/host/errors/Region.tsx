@@ -1,4 +1,5 @@
 import { Component, createContext, useContext, type ReactNode } from "react";
+import { IconAlert, IconRetry } from "../icons";
 import { isCancel, registerRegion, reportFailure, toError, type ReportRegion } from "./failures";
 
 // One failure-isolation region (R6.1). Catches render errors like any error boundary,
@@ -24,8 +25,8 @@ interface Props {
   region: ReportRegion;
   screenId: string | null;
   elementKey?: string;
-  /** Message shown in the error state. Defaults to the error's message. */
-  message?: string;
+  /** Message shown in the error state (or derived from the error). Defaults to the error's message. */
+  message?: string | ((error: Error) => string);
   className?: string;
   onRetry?: () => void;
   children: ReactNode;
@@ -34,6 +35,11 @@ interface Props {
 interface State {
   error: Error | null;
   attempt: number;
+}
+
+function messageFor(message: Props["message"], error: Error): string {
+  if (typeof message === "function") return message(error);
+  return message ?? error.message;
 }
 
 export class Region extends Component<Props, State> {
@@ -102,8 +108,10 @@ export class Region extends Component<Props, State> {
     if (error) {
       return (
         <div className={`region-error ${this.props.className ?? ""}`} role="alert">
-          <span className="region-error__msg">{this.props.message ?? error.message}</span>
+          <IconAlert className="region-error__icon" />
+          <span className="region-error__msg">{messageFor(this.props.message, error)}</span>
           <button type="button" className="btn btn--small" onClick={this.retry}>
+            <IconRetry />
             Retry
           </button>
         </div>

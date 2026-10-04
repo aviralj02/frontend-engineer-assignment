@@ -26,6 +26,11 @@ export class TimeoutError extends Error {
   override name = "TimeoutError";
 }
 
+/** The page never connected, or its script stopped answering (R6.2). */
+export class ConnectionError extends Error {
+  override name = "ConnectionError";
+}
+
 export interface ConnectionEvents {
   /** A new page session started (first load or navigation). */
   onSession(ch: string, hello: Extract<AgentMessage, { kind: "hello" }>, isNavigation: boolean): void;
@@ -189,6 +194,6 @@ export class PreviewConnection {
   private die(message: string) {
     if (this.dead) return;
     this.dispose();
-    this.events.onDead(new Error(message));
+    this.events.onDead(new ConnectionError(message));
   }
 }
