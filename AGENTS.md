@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Working rules for anyone (human or AI) building in this repo. **`BRIEF.md` is the spec** (the original assignment README). Cite requirement IDs (R3.7, R6.4, …) in commits, comments and PRs. If this file and the brief disagree, the brief wins. Record the decision under "Ambiguities" in README.md.
+Working rules for anyone (human or AI) building in this repo. **The assignment brief is the spec**: [doc.figr.design/frontend-engineer](https://doc.figr.design/frontend-engineer); the original kit README with R1–R6 is in git history (`git show 888649c:README.md`). [`ARCHITECTURE.md`](ARCHITECTURE.md) explains the design in plain language. Cite requirement IDs (R3.7, R6.4, …) in commits, comments and PRs. If this file and the brief disagree, the brief wins. Record the decision under "Ambiguities" in README.md.
 
 ## What we're building
 

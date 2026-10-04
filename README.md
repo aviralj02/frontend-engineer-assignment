@@ -2,7 +2,7 @@
 
 This is a viewer for a design-tool board: 24 live, **cross-origin** page previews. You can hover and select any element in them, browse each page's element tree, and inspect computed values and API details. Failures stay inside the region they happen in.
 
-Brief: [`BRIEF.md`](BRIEF.md) (the original assignment README) · Working rules: [`AGENTS.md`](AGENTS.md)
+Brief: [doc.figr.design/frontend-engineer](https://doc.figr.design/frontend-engineer) · How it works, in plain language: [`ARCHITECTURE.md`](ARCHITECTURE.md) · Working rules: [`AGENTS.md`](AGENTS.md)
 
 ```bash
 npm install
