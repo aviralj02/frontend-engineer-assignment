@@ -11,6 +11,8 @@ import { cx } from "../util";
 // at its edges and anything scrolled out of the page simply isn't visible.
 
 const LABEL_H = 18;
+/** Matches .preview's border-radius (world px), so outlines are cut at the same corners. */
+const PREVIEW_RADIUS = 6;
 const LABEL_GAP = 2;
 
 export function Overlay() {
@@ -32,6 +34,7 @@ export function Overlay() {
           <div key={screen.id}>
             <div className={cx("preview-title", screen.id === activeScreenId && "is-active")} style={{ left: box.left, top: box.top, width: box.width }}>
               <span className="preview-title__name">{screen.name}</span>
+              <PagePath screenId={screen.id} />
               <PageErrorBadge screenId={screen.id} />
             </div>
             {/* Drawing belongs to the preview: a throw here fails that preview only (R6.5). */}
@@ -75,7 +78,7 @@ function Outlines({ screenId, box, zoom }: { screenId: string; box: Box; zoom: n
   const selected = new Set(selection ?? []);
 
   return (
-    <div className="clip" style={box}>
+    <div className="clip" style={{ ...box, borderRadius: PREVIEW_RADIUS * zoom }}>
       {items.map(({ nid, kind }) => {
         const r = preview.rects[nid];
         if (!r) return null;
@@ -118,11 +121,20 @@ function Outline({ kind, rect, zoom, clipH, label }: { kind: "hover" | "select";
   );
 }
 
+/** The page currently shown, so a navigation (R3.8) is visible on the board. */
+function PagePath({ screenId }: { screenId: string }) {
+  const href = useStore((s) => s.previews[screenId]?.href);
+  if (!href) return null;
+  const file = new URL(href).pathname.replace(/^\//, "");
+  return <span className="preview-title__path">{file}</span>;
+}
+
 function PageErrorBadge({ screenId }: { screenId: string }) {
   const errors = useStore((s) => s.previews[screenId]?.pageErrors);
   if (!errors?.length) return null;
   return (
     <span className="page-badge" tabIndex={0} aria-label={`Page error: ${errors[errors.length - 1]}`}>
+      <span className="page-badge__dot" aria-hidden="true" />
       Page error{errors.length > 1 ? ` ×${errors.length}` : ""}
       <span className="page-badge__tip" role="tooltip">
         {errors.slice(-5).map((m, i) => (

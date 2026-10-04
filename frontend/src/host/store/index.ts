@@ -101,7 +101,7 @@ export const emptySelection: Selection = { screenId: null, nids: [], gone: false
 export const useStore = create<State>()(() => ({
   screens: null,
   mode: "select",
-  view: { x: 40, y: 80, zoom: 0.3 },
+  view: { x: 300, y: 72, zoom: 0.3 },
   gesture: false,
   previews: {},
   layers: {},

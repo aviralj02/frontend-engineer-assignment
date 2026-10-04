@@ -1,6 +1,7 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import type { Nid } from "../../protocol";
 import { Region } from "../errors/Region";
+import { IconChevron, IconRetry, IconSearch, TagIcon } from "../icons";
 import { ROOT, useStore } from "../store";
 import { clearHoverFrom, selectOnly, setHover, toggleInSelection } from "../store/actions";
 import { cx } from "../util";
@@ -19,8 +20,8 @@ import {
 } from "./actions";
 import { buildRows, type Row } from "./rows";
 
-const ROW_H = 24;
-const INDENT = 12;
+const ROW_H = 26;
+const INDENT = 14;
 
 export function LayersPanel() {
   const screenId = useStore((s) => s.activeScreenId);
@@ -30,7 +31,7 @@ export function LayersPanel() {
   return (
     <>
       <div className="panel-header">
-        <span>Layers</span>
+        <span className="panel-header__title">Layers</span>
         {name && <span className="panel-header__sub">{name}</span>}
       </div>
       {!screenId || !ch ? (
@@ -104,7 +105,12 @@ function Layers({ screenId }: { screenId: string }) {
         onScroll={(e) => rememberScroll(screenId, e.currentTarget.scrollTop)}
         onMouseLeave={() => clearHoverFrom(screenId, "layers")}
       >
-        {!rootList || rootList.status === "loading" ? <div className="layers__note">Loading…</div> : null}
+        {!rootList || rootList.status === "loading" ? (
+          <div className="layers__note">
+            <span className="spinner spinner--small" aria-hidden="true" />
+            Loading layers…
+          </div>
+        ) : null}
         {layers?.search && layers.search.status === "ready" && rows.length === 0 ? <div className="layers__note">No matches</div> : null}
         <div className="layers__rows" style={{ minWidth: "max-content" }}>
           {rows.map((r) =>
@@ -155,7 +161,7 @@ const NodeRow = memo(function NodeRow({
       aria-selected={selected}
       aria-expanded={node.hasChildren ? expanded : undefined}
       data-nid={nid}
-      style={{ paddingLeft: 6 + depth * INDENT, height: ROW_H }}
+      style={{ paddingLeft: 8 + depth * INDENT, height: ROW_H, ["--depth" as string]: depth }}
       onMouseEnter={() => setHover({ screenId, nid, source: "layers", path: [] })}
       onClick={(e) => {
         if (e.shiftKey) toggleInSelection(screenId, nid); // R4.7
@@ -166,23 +172,33 @@ const NodeRow = memo(function NodeRow({
       }}
     >
       <span className={cx("row__chevron", node.hasChildren && "has-children", expanded && "is-open")} onClick={toggle} aria-hidden>
-        {node.hasChildren ? "›" : ""}
+        {node.hasChildren && <IconChevron />}
       </span>
-      <span className="row__tag">{tagIcon(node.tag)}</span>
+      <span className="row__tag" title={`<${node.tag}>`}>
+        <TagIcon tag={node.tag} />
+      </span>
       <span className="row__name">{node.name}</span>
+      {node.key && <span className="row__key" title={`data-key="${node.key}"`} aria-label="has details" />}
     </div>
   );
 });
 
 function StatusRow({ screenId, row }: { screenId: string; row: Extract<Row, { kind: "loading" | "error" }> }) {
   return (
-    <div className={cx("row row--status", row.kind === "error" && "is-error")} style={{ paddingLeft: 6 + row.depth * INDENT + 16, height: ROW_H }}>
+    <div
+      className={cx("row row--status", row.kind === "error" && "is-error")}
+      style={{ paddingLeft: 8 + row.depth * INDENT + 20, height: ROW_H, ["--depth" as string]: row.depth }}
+    >
       {row.kind === "loading" ? (
-        <span className="row__loading">Loading…</span>
+        <span className="row__loading">
+          <span className="spinner spinner--small" aria-hidden="true" />
+          Loading…
+        </span>
       ) : (
         <>
           <span>Couldn't load</span>
-          <button type="button" className="btn btn--small" onClick={() => retryRow(screenId, row.parent)}>
+          <button type="button" className="link-btn" onClick={() => retryRow(screenId, row.parent)}>
+            <IconRetry />
             Retry
           </button>
         </>
@@ -194,6 +210,7 @@ function StatusRow({ screenId, row }: { screenId: string; row: Extract<Row, { ki
 function SearchBox({ screenId, query }: { screenId: string; query: string }) {
   return (
     <div className="layers__search">
+      <IconSearch className="layers__search-icon" />
       <input
         type="search"
         placeholder="Search layers"
@@ -210,14 +227,6 @@ function SearchBox({ screenId, query }: { screenId: string; query: string }) {
       />
     </div>
   );
-}
-
-function tagIcon(tag: string): string {
-  if (tag === "svg" || tag === "path" || tag === "circle") return "◇";
-  if (tag === "img") return "▣";
-  if (/^(a|button|input|select|textarea|label)$/.test(tag)) return "◉";
-  if (/^(p|span|h[1-6]|b|strong|em|td|th)$/.test(tag)) return "T";
-  return "▢";
 }
 
 // ---- keyboard (R4.8) ----

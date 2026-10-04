@@ -45,14 +45,45 @@ function BoardContent() {
     return () => ac.abort();
   }, [fail]);
 
-  if (loading || !screens) return <div className="board-status">Loading screens…</div>;
+  if (loading || !screens) return <BoardLoading />;
   return <Viewport />;
+}
+
+// The canvas grid is drawn by the board's own background, positioned from the view, so
+// it pans and scales with the content. Fine dots fade out as they crowd together.
+const GRID = 24; // world px between minor dots
+const MAJOR = 5; // a major dot every 5 minor ones
+
+function gridStyle(view: { x: number; y: number; zoom: number }): React.CSSProperties {
+  const minor = GRID * view.zoom;
+  const major = minor * MAJOR;
+  const minorAlpha = Math.max(0, Math.min(1, (minor - 7) / 10));
+  return {
+    ["--grid-minor" as string]: `${minor}px`,
+    ["--grid-major" as string]: `${major}px`,
+    ["--grid-x" as string]: `${view.x}px`,
+    ["--grid-y" as string]: `${view.y}px`,
+    ["--grid-minor-a" as string]: String(minorAlpha),
+  };
+}
+
+function BoardLoading() {
+  return (
+    <div className="board board--loading" style={gridStyle(useStore.getState().view)}>
+      <div className="board-status" role="status">
+        <span className="spinner" aria-hidden="true" />
+        Loading screens…
+      </div>
+    </div>
+  );
 }
 
 function Viewport() {
   const ref = useRef<HTMLDivElement>(null);
   const screens = useStore((s) => s.screens)!;
   const view = useStore((s) => s.view);
+  const mode = useStore((s) => s.mode);
+  const [dragging, setDragging] = useState(false);
   const { fail } = useRegion();
 
   // Wheel over empty board: pan, or zoom with Ctrl/Cmd (R1.2, R1.3). Non-passive so we
@@ -103,7 +134,10 @@ function Viewport() {
     const dx = e.clientX - d.x;
     const dy = e.clientY - d.y;
     if (!d.moved && Math.hypot(dx, dy) < 3) return;
-    if (!d.moved) setGesture(true);
+    if (!d.moved) {
+      setGesture(true);
+      setDragging(true);
+    }
     d.moved = true;
     d.x = e.clientX;
     d.y = e.clientY;
@@ -113,6 +147,7 @@ function Viewport() {
     const d = drag.current;
     if (!d || d.id !== e.pointerId) return;
     drag.current = null;
+    setDragging(false);
     if (d.moved) setGesture(false);
     else if (e.button === 0) clearSelection();
   };
@@ -120,7 +155,8 @@ function Viewport() {
   return (
     <div
       ref={ref}
-      className="board"
+      className={`board${dragging ? " is-dragging" : ""}`}
+      style={gridStyle(view)}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -138,6 +174,12 @@ function Viewport() {
         ))}
       </div>
       <Overlay />
+      {mode === "interact" && (
+        <div className="mode-hint" role="status">
+          <span className="mode-hint__dot" />
+          Interact mode: pages are live. Press <kbd>V</kbd> to select again.
+        </div>
+      )}
     </div>
   );
 }

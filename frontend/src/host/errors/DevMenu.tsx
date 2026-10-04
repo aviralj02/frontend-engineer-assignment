@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { AgentFault } from "../../protocol";
 import { getConnection } from "../bridge";
+import { IconClose, IconFlask } from "../icons";
 import { useStore, type DevState } from "../store";
 import { onReport } from "./failures";
 
@@ -58,9 +59,11 @@ export function DevMenu() {
   return (
     <aside className="devmenu" aria-label="Dev failure menu">
       <div className="devmenu__head">
+        <IconFlask />
         <strong>Dev failures</strong>
-        <button type="button" className="btn btn--ghost btn--small" onClick={() => patchDev((d) => ({ open: !d.open }))}>
-          Close
+        <span className="devmenu__sub">Every trigger runs the real code path</span>
+        <button type="button" className="icon-btn" aria-label="Close" onClick={() => patchDev((d) => ({ open: !d.open }))}>
+          <IconClose />
         </button>
       </div>
 
